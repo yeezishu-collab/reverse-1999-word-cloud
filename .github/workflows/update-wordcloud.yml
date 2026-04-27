@@ -26,9 +26,9 @@ jobs:
             echo "data/sources.json is missing; skipping collection."
           fi
       - name: Build word cloud
-        run: python src/analyze.py
+        run: python src/analyze.py --limit 160
       - name: Commit generated docs
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update generated word cloud"
-          file_pattern: docs/wordcloud.json docs/wordcloud.svg
+          file_pattern: docs/data.json docs/wordcloud.json docs/wordcloud.svg
