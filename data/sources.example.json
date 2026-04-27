@@ -2,11 +2,17 @@
   {
     "name": "official-homepage",
     "type": "page",
-    "url": "https://re.bluepoch.com/"
+    "url": "https://re.bluepoch.com/",
+    "platform": "official",
+    "tags": ["official", "homepage"],
+    "enabled": true
   },
   {
     "name": "example-search-page",
     "type": "page",
-    "url": "https://example.com/search?q=%E9%87%8D%E8%BF%94%E6%9C%AA%E6%9D%A51999"
+    "url": "https://example.com/search?q=%E9%87%8D%E8%BF%94%E6%9C%AA%E6%9D%A51999",
+    "platform": "example",
+    "tags": ["placeholder"],
+    "enabled": false
   }
 ]
