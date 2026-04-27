@@ -5,4 +5,5 @@ __pycache__/
 data/raw/
 data/metadata.jsonl
 data/sources.json
+data/corpus/
 *.log
