@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reverse: 1999 Word Cloud</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f8fafc;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #cbd5e1;
+        --accent: #0f766e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Arial, "Microsoft YaHei", sans-serif;
+      }
+
+      header,
+      main,
+      footer {
+        width: min(1120px, calc(100vw - 32px));
+        margin: 0 auto;
+      }
+
+      header {
+        padding: 36px 0 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 5vw, 56px);
+        letter-spacing: 0;
+      }
+
+      .meta {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .cloud {
+        min-height: 58vh;
+        padding: 28px 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: center;
+        align-items: center;
+        gap: 14px 24px;
+      }
+
+      .word {
+        line-height: 1;
+        font-weight: 800;
+        color: var(--accent);
+        white-space: nowrap;
+      }
+
+      footer {
+        padding: 18px 0 34px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Reverse: 1999 Word Cloud</h1>
+      <div class="meta" id="meta">Loading word frequency data...</div>
+    </header>
+    <main>
+      <section class="cloud" id="cloud" aria-label="word cloud"></section>
+    </main>
+    <footer>
+      Generated from configured public sources. Respect source robots.txt and platform terms.
+    </footer>
+    <script>
+      const palette = ["#0f766e", "#b91c1c", "#1d4ed8", "#a16207", "#7c3aed", "#166534"];
+
+      function sizeFor(value, max) {
+        return Math.round(16 + 48 * Math.sqrt(value / max));
+      }
+
+      async function boot() {
+        const cloud = document.querySelector("#cloud");
+        const meta = document.querySelector("#meta");
+        const response = await fetch("./wordcloud.json", { cache: "no-store" });
+        const words = await response.json();
+        const max = Math.max(...words.map((word) => word.value), 1);
+
+        cloud.innerHTML = "";
+        words.forEach((word, index) => {
+          const span = document.createElement("span");
+          span.className = "word";
+          span.textContent = word.text;
+          span.title = `${word.text}: ${word.value}`;
+          span.style.fontSize = `${sizeFor(word.value, max)}px`;
+          span.style.color = palette[index % palette.length];
+          cloud.appendChild(span);
+        });
+        meta.textContent = `${words.length} keywords · Updated from docs/wordcloud.json`;
+      }
+
+      boot().catch((error) => {
+        document.querySelector("#meta").textContent = `Failed to load wordcloud.json: ${error.message}`;
+      });
+    </script>
+  </body>
+</html>
