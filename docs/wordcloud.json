@@ -1,17 +1,226 @@
 [
-  { "text": "维尔汀", "value": 88 },
-  { "text": "十四行诗", "value": 76 },
-  { "text": "槲寄生", "value": 64 },
-  { "text": "司辰", "value": 58 },
-  { "text": "神秘学家", "value": 54 },
-  { "text": "箱中世界", "value": 48 },
-  { "text": "暴雨", "value": 44 },
-  { "text": "剧情", "value": 38 },
-  { "text": "角色", "value": 36 },
-  { "text": "配队", "value": 30 },
-  { "text": "心相", "value": 28 },
-  { "text": "洞悉", "value": 26 },
-  { "text": "鬃毛邮报", "value": 22 },
-  { "text": "荒原", "value": 20 },
-  { "text": "版本活动", "value": 18 }
+  {
+    "text": "强度",
+    "value": 2
+  },
+  {
+    "text": "箱中世界",
+    "value": 2
+  },
+  {
+    "text": "神秘学家",
+    "value": 2
+  },
+  {
+    "text": "主线剧情",
+    "value": 2
+  },
+  {
+    "text": "心相",
+    "value": 2
+  },
+  {
+    "text": "洞悉",
+    "value": 2
+  },
+  {
+    "text": "共鸣",
+    "value": 2
+  },
+  {
+    "text": "鬃毛邮报",
+    "value": 2
+  },
+  {
+    "text": "深眠域",
+    "value": 2
+  },
+  {
+    "text": "人工梦游",
+    "value": 2
+  },
+  {
+    "text": "苏芙比",
+    "value": 1
+  },
+  {
+    "text": "槲寄生",
+    "value": 1
+  },
+  {
+    "text": "红弩箭",
+    "value": 1
+  },
+  {
+    "text": "星锑",
+    "value": 1
+  },
+  {
+    "text": "牙仙",
+    "value": 1
+  },
+  {
+    "text": "洁西卡",
+    "value": 1
+  },
+  {
+    "text": "曲娘",
+    "value": 1
+  },
+  {
+    "text": "伊索尔德",
+    "value": 1
+  },
+  {
+    "text": "露西",
+    "value": 1
+  },
+  {
+    "text": "卡卡尼亚",
+    "value": 1
+  },
+  {
+    "text": "抽卡",
+    "value": 1
+  },
+  {
+    "text": "数值",
+    "value": 1
+  },
+  {
+    "text": "人设",
+    "value": 1
+  },
+  {
+    "text": "立绘",
+    "value": 1
+  },
+  {
+    "text": "语音",
+    "value": 1
+  },
+  {
+    "text": "维尔汀",
+    "value": 1
+  },
+  {
+    "text": "十四行诗",
+    "value": 1
+  },
+  {
+    "text": "暴雨",
+    "value": 1
+  },
+  {
+    "text": "司辰",
+    "value": 1
+  },
+  {
+    "text": "剧情体验",
+    "value": 1
+  },
+  {
+    "text": "世界观",
+    "value": 1
+  },
+  {
+    "text": "版本活动",
+    "value": 1
+  },
+  {
+    "text": "新角色",
+    "value": 1
+  },
+  {
+    "text": "配队",
+    "value": 1
+  },
+  {
+    "text": "队伍循环",
+    "value": 1
+  },
+  {
+    "text": "角色塑造",
+    "value": 1
+  },
+  {
+    "text": "配音",
+    "value": 1
+  },
+  {
+    "text": "美术",
+    "value": 1
+  },
+  {
+    "text": "伤害曲线",
+    "value": 1
+  },
+  {
+    "text": "行动点",
+    "value": 1
+  },
+  {
+    "text": "激情循环",
+    "value": 1
+  },
+  {
+    "text": "队伍兼容性",
+    "value": 1
+  },
+  {
+    "text": "关卡机制",
+    "value": 1
+  },
+  {
+    "text": "塑造",
+    "value": 1
+  },
+  {
+    "text": "荒原",
+    "value": 1
+  },
+  {
+    "text": "尘埃运动",
+    "value": 1
+  },
+  {
+    "text": "意志解析",
+    "value": 1
+  },
+  {
+    "text": "开荒阵容",
+    "value": 1
+  },
+  {
+    "text": "养成优先级",
+    "value": 1
+  },
+  {
+    "text": "抽卡规划",
+    "value": 1
+  },
+  {
+    "text": "资源分配",
+    "value": 1
+  },
+  {
+    "text": "零氪",
+    "value": 1
+  },
+  {
+    "text": "复刻节奏",
+    "value": 1
+  },
+  {
+    "text": "限定池价值",
+    "value": 1
+  },
+  {
+    "text": "材料消耗",
+    "value": 1
+  },
+  {
+    "text": "长期收益",
+    "value": 1
+  }
 ]
