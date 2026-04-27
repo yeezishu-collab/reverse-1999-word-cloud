@@ -7,11 +7,17 @@
     <style>
       :root {
         color-scheme: light;
-        --bg: #f8fafc;
-        --ink: #0f172a;
-        --muted: #64748b;
-        --line: #cbd5e1;
-        --accent: #0f766e;
+        --bg: #f7f7f4;
+        --ink: #17211f;
+        --muted: #66736f;
+        --line: #d7ddd8;
+        --panel: #ffffff;
+        --teal: #0f766e;
+        --red: #b91c1c;
+        --blue: #1d4ed8;
+        --gold: #a16207;
+        --violet: #6d28d9;
+        --green: #166534;
       }
 
       * {
@@ -29,77 +35,236 @@
       header,
       main,
       footer {
-        width: min(1120px, calc(100vw - 32px));
+        width: min(1180px, calc(100vw - 32px));
         margin: 0 auto;
       }
 
       header {
-        padding: 36px 0 18px;
+        padding: 34px 0 20px;
         border-bottom: 1px solid var(--line);
       }
 
       h1 {
         margin: 0;
-        font-size: clamp(28px, 5vw, 56px);
+        font-size: clamp(30px, 5vw, 58px);
         letter-spacing: 0;
       }
 
-      .meta {
+      .subtitle {
         margin-top: 10px;
+        max-width: 760px;
         color: var(--muted);
-        font-size: 14px;
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin: 22px 0 0;
+      }
+
+      .metric,
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .metric {
+        padding: 14px 16px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      .metric span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
+        gap: 18px;
+        padding: 22px 0;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .panel h2 {
+        margin: 0 0 14px;
+        font-size: 17px;
       }
 
       .cloud {
-        min-height: 58vh;
-        padding: 28px 0;
+        min-height: 470px;
         display: flex;
         flex-wrap: wrap;
         align-content: center;
         align-items: center;
-        gap: 14px 24px;
+        gap: 13px 22px;
       }
 
       .word {
         line-height: 1;
         font-weight: 800;
-        color: var(--accent);
         white-space: nowrap;
       }
 
+      .table {
+        display: grid;
+        gap: 9px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: minmax(80px, 1fr) 52px;
+        gap: 10px;
+        align-items: center;
+        font-size: 14px;
+      }
+
+      .bar {
+        height: 8px;
+        margin-top: 5px;
+        overflow: hidden;
+        background: #e8ece8;
+        border-radius: 999px;
+      }
+
+      .bar i {
+        display: block;
+        height: 100%;
+        width: var(--w);
+        background: var(--teal);
+      }
+
+      .source-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .source {
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+      }
+
+      .source b {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .source span {
+        display: inline-block;
+        margin: 0 8px 8px 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
       footer {
-        padding: 18px 0 34px;
+        padding: 20px 0 34px;
         border-top: 1px solid var(--line);
         color: var(--muted);
         font-size: 13px;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 840px) {
+        .metrics,
+        .layout,
+        .source-list {
+          grid-template-columns: 1fr;
+        }
+
+        .cloud {
+          min-height: 360px;
+          align-content: flex-start;
+        }
       }
     </style>
   </head>
   <body>
     <header>
       <h1>Reverse: 1999 Word Cloud</h1>
-      <div class="meta" id="meta">Loading word frequency data...</div>
+      <p class="subtitle">
+        Public-source word-frequency dashboard for Reverse: 1999. It is designed for transparent source lists,
+        repeatable cleaning, and lightweight GitHub Pages publishing.
+      </p>
+      <section class="metrics" id="metrics"></section>
     </header>
     <main>
-      <section class="cloud" id="cloud" aria-label="word cloud"></section>
+      <section class="layout">
+        <article class="panel">
+          <h2>Word Cloud</h2>
+          <div class="cloud" id="cloud" aria-label="word cloud"></div>
+        </article>
+        <aside class="panel">
+          <h2>Top Terms</h2>
+          <div class="table" id="table"></div>
+        </aside>
+      </section>
+      <section class="panel">
+        <h2>Sources</h2>
+        <div class="source-list" id="sources"></div>
+      </section>
     </main>
-    <footer>
-      Generated from configured public sources. Respect source robots.txt and platform terms.
+    <footer id="footer">
+      Generated from configured public sources. Raw collection output is ignored by default; publish only aggregated data.
     </footer>
     <script>
-      const palette = ["#0f766e", "#b91c1c", "#1d4ed8", "#a16207", "#7c3aed", "#166534"];
+      const palette = ["#0f766e", "#b91c1c", "#1d4ed8", "#a16207", "#6d28d9", "#166534"];
+      const fallback = {
+        generated_at: "local",
+        summary: { documents: 0, tokens: 0, unique_terms: 0, median_document_characters: 0, mode: "empty" },
+        top_words: [],
+        by_source: {},
+        by_platform: {},
+        documents: []
+      };
 
-      function sizeFor(value, max) {
-        return Math.round(16 + 48 * Math.sqrt(value / max));
+      function formatNumber(value) {
+        return new Intl.NumberFormat("en-US").format(value || 0);
       }
 
-      async function boot() {
-        const cloud = document.querySelector("#cloud");
-        const meta = document.querySelector("#meta");
-        const response = await fetch("./wordcloud.json", { cache: "no-store" });
-        const words = await response.json();
-        const max = Math.max(...words.map((word) => word.value), 1);
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
 
+      function sizeFor(value, max) {
+        return Math.round(15 + 50 * Math.sqrt(value / Math.max(max, 1)));
+      }
+
+      function metric(label, value) {
+        return `<div class="metric"><strong>${formatNumber(value)}</strong><span>${label}</span></div>`;
+      }
+
+      function renderMetrics(summary) {
+        document.querySelector("#metrics").innerHTML = [
+          metric("documents", summary.documents),
+          metric("tokens", summary.tokens),
+          metric("unique terms", summary.unique_terms),
+          metric("median chars", summary.median_document_characters)
+        ].join("");
+      }
+
+      function renderCloud(words) {
+        const cloud = document.querySelector("#cloud");
+        const max = Math.max(...words.map((word) => word.value), 1);
         cloud.innerHTML = "";
         words.forEach((word, index) => {
           const span = document.createElement("span");
@@ -110,11 +275,53 @@
           span.style.color = palette[index % palette.length];
           cloud.appendChild(span);
         });
-        meta.textContent = `${words.length} keywords · Updated from docs/wordcloud.json`;
       }
 
-      boot().catch((error) => {
-        document.querySelector("#meta").textContent = `Failed to load wordcloud.json: ${error.message}`;
+      function renderTable(words) {
+        const table = document.querySelector("#table");
+        const max = Math.max(...words.map((word) => word.value), 1);
+        table.innerHTML = words.slice(0, 24).map((word) => `
+          <div class="row">
+            <div>
+              <b>${escapeHtml(word.text)}</b>
+              <div class="bar"><i style="--w:${Math.max(4, (word.value / max) * 100)}%"></i></div>
+            </div>
+            <span>${word.value}</span>
+          </div>
+        `).join("");
+      }
+
+      function renderSources(data) {
+        const host = document.querySelector("#sources");
+        const groups = Object.entries(data.by_platform || data.by_source || {});
+        host.innerHTML = groups.length ? groups.map(([name, words]) => `
+          <div class="source">
+            <b>${escapeHtml(name)}</b>
+            ${(words || []).slice(0, 10).map((word) => `<span>${escapeHtml(word.text)} ${word.value}</span>`).join("")}
+          </div>
+        `).join("") : "<p>No source groups yet.</p>";
+      }
+
+      async function loadData() {
+        try {
+          const response = await fetch("./data.json", { cache: "no-store" });
+          if (!response.ok) throw new Error(response.statusText);
+          return response.json();
+        } catch (_) {
+          const response = await fetch("./wordcloud.json", { cache: "no-store" });
+          const topWords = response.ok ? await response.json() : [];
+          return { ...fallback, top_words: topWords };
+        }
+      }
+
+      loadData().then((data) => {
+        const words = data.top_words || [];
+        renderMetrics(data.summary || fallback.summary);
+        renderCloud(words);
+        renderTable(words);
+        renderSources(data);
+        document.querySelector("#footer").textContent =
+          `Generated at ${data.generated_at}. Mode: ${(data.summary || {}).mode || "unknown"}. Aggregated data only.`;
       });
     </script>
   </body>
