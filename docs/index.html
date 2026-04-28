@@ -7,11 +7,12 @@
     <style>
       :root {
         color-scheme: light;
-        --bg: #f7f7f4;
-        --ink: #17211f;
-        --muted: #66736f;
-        --line: #d7ddd8;
-        --panel: #ffffff;
+        --bg: #f6f4ef;
+        --ink: #18211f;
+        --muted: #63716e;
+        --line: #d8d5c9;
+        --panel: #fffdfa;
+        --wash: #eeebe2;
         --teal: #0f766e;
         --red: #b91c1c;
         --blue: #1d4ed8;
@@ -35,23 +36,32 @@
       header,
       main,
       footer {
-        width: min(1180px, calc(100vw - 32px));
+        width: min(1220px, calc(100vw - 32px));
         margin: 0 auto;
       }
 
       header {
-        padding: 34px 0 20px;
+        padding: 30px 0 20px;
         border-bottom: 1px solid var(--line);
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--teal);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
       h1 {
         margin: 0;
-        font-size: clamp(30px, 5vw, 58px);
+        font-size: clamp(32px, 5vw, 62px);
         letter-spacing: 0;
       }
 
       .subtitle {
-        margin-top: 10px;
+        margin: 10px 0 0;
         max-width: 760px;
         color: var(--muted);
         font-size: 15px;
@@ -89,29 +99,114 @@
         font-size: 13px;
       }
 
-      .layout {
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 0 0;
+      }
+
+      .segment,
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 8px 12px;
+      }
+
+      button[aria-pressed="true"] {
+        border-color: var(--teal);
+        background: var(--teal);
+        color: white;
+      }
+
+      .grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
+        grid-template-columns: minmax(0, 1.55fr) minmax(330px, 0.95fr);
         gap: 18px;
-        padding: 22px 0;
+        padding: 18px 0;
       }
 
       .panel {
+        min-width: 0;
         padding: 18px;
       }
 
+      .panel-head {
+        display: flex;
+        gap: 12px;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
       .panel h2 {
-        margin: 0 0 14px;
+        margin: 0;
         font-size: 17px;
       }
 
-      .cloud {
-        min-height: 470px;
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .viz {
+        position: relative;
+        min-height: 560px;
+        overflow: hidden;
+        background:
+          linear-gradient(90deg, rgba(24, 33, 31, 0.05) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(24, 33, 31, 0.05) 1px, transparent 1px);
+        background-size: 48px 48px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      #bubbleSvg,
+      #radialSvg {
+        display: block;
+        width: 100%;
+        height: 560px;
+      }
+
+      .bubble-label {
+        dominant-baseline: middle;
+        fill: white;
+        font-weight: 800;
+        pointer-events: none;
+        text-anchor: middle;
+      }
+
+      .bubble-value {
+        dominant-baseline: middle;
+        fill: rgba(255, 255, 255, 0.82);
+        font-size: 11px;
+        pointer-events: none;
+        text-anchor: middle;
+      }
+
+      .word-cloud {
+        min-height: 560px;
         display: flex;
         flex-wrap: wrap;
         align-content: center;
         align-items: center;
         gap: 13px 22px;
+        padding: 18px;
       }
 
       .word {
@@ -127,17 +222,17 @@
 
       .row {
         display: grid;
-        grid-template-columns: minmax(80px, 1fr) 52px;
+        grid-template-columns: minmax(90px, 1fr) 52px;
         gap: 10px;
         align-items: center;
         font-size: 14px;
       }
 
       .bar {
-        height: 8px;
+        height: 9px;
         margin-top: 5px;
         overflow: hidden;
-        background: #e8ece8;
+        background: var(--wash);
         border-radius: 999px;
       }
 
@@ -145,30 +240,62 @@
         display: block;
         height: 100%;
         width: var(--w);
-        background: var(--teal);
+        background: var(--c, var(--teal));
       }
 
-      .source-list {
+      .source-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
       }
 
-      .source {
+      .source-card {
         border-top: 1px solid var(--line);
         padding-top: 12px;
       }
 
-      .source b {
+      .source-card b {
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      .mini-bars {
+        display: grid;
+        gap: 7px;
+      }
+
+      .mini {
+        display: grid;
+        grid-template-columns: minmax(64px, 1fr) 36px;
+        gap: 8px;
+        align-items: center;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .documents {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .doc {
+        min-height: 92px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+      }
+
+      .doc b {
         display: block;
         margin-bottom: 8px;
       }
 
-      .source span {
-        display: inline-block;
-        margin: 0 8px 8px 0;
+      .doc span {
+        display: block;
         color: var(--muted);
-        font-size: 13px;
+        font-size: 12px;
+        line-height: 1.5;
       }
 
       footer {
@@ -179,43 +306,72 @@
         line-height: 1.6;
       }
 
-      @media (max-width: 840px) {
+      @media (max-width: 980px) {
         .metrics,
-        .layout,
-        .source-list {
+        .grid,
+        .source-grid,
+        .documents {
           grid-template-columns: 1fr;
         }
 
-        .cloud {
-          min-height: 360px;
-          align-content: flex-start;
+        .viz,
+        #bubbleSvg,
+        #radialSvg,
+        .word-cloud {
+          min-height: 420px;
+          height: 420px;
         }
       }
     </style>
   </head>
   <body>
     <header>
+      <p class="eyebrow">Reverse: 1999 Public Discussion Map</p>
       <h1>Reverse: 1999 Word Cloud</h1>
       <p class="subtitle">
-        Public-source word-frequency dashboard for Reverse: 1999. It is designed for transparent source lists,
-        repeatable cleaning, and lightweight GitHub Pages publishing.
+        Aggregated word-frequency dashboard for Reverse: 1999. Switch views to inspect dominant terms,
+        source-level differences, and the shape of the collected corpus.
       </p>
       <section class="metrics" id="metrics"></section>
+      <div class="toolbar">
+        <div class="segment" aria-label="visual mode">
+          <button type="button" data-view="bubble" aria-pressed="true">Bubble Map</button>
+          <button type="button" data-view="cloud" aria-pressed="false">Word Cloud</button>
+          <button type="button" data-view="radial" aria-pressed="false">Radial Map</button>
+        </div>
+        <div class="chips" id="scopeChips" aria-label="scope selector"></div>
+      </div>
     </header>
     <main>
-      <section class="layout">
+      <section class="grid">
         <article class="panel">
-          <h2>Word Cloud</h2>
-          <div class="cloud" id="cloud" aria-label="word cloud"></div>
+          <div class="panel-head">
+            <h2 id="vizTitle">Bubble Map</h2>
+            <span class="hint" id="vizHint">Circle size follows term frequency.</span>
+          </div>
+          <div class="viz" id="viz"></div>
         </article>
         <aside class="panel">
-          <h2>Top Terms</h2>
+          <div class="panel-head">
+            <h2>Ranked Terms</h2>
+            <span class="hint" id="scopeLabel">all terms</span>
+          </div>
           <div class="table" id="table"></div>
         </aside>
       </section>
       <section class="panel">
-        <h2>Sources</h2>
-        <div class="source-list" id="sources"></div>
+        <div class="panel-head">
+          <h2>Source Matrix</h2>
+          <span class="hint">Top terms by platform or source</span>
+        </div>
+        <div class="source-grid" id="sources"></div>
+      </section>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Corpus Documents</h2>
+          <span class="hint">Aggregation inputs, not raw text</span>
+        </div>
+        <div class="documents" id="documents"></div>
       </section>
     </main>
     <footer id="footer">
@@ -231,6 +387,7 @@
         by_platform: {},
         documents: []
       };
+      const state = { view: "bubble", scope: "all", data: fallback };
 
       function formatNumber(value) {
         return new Intl.NumberFormat("en-US").format(value || 0);
@@ -245,8 +402,19 @@
           .replaceAll("'", "&#039;");
       }
 
-      function sizeFor(value, max) {
-        return Math.round(15 + 50 * Math.sqrt(value / Math.max(max, 1)));
+      function color(index) {
+        return palette[index % palette.length];
+      }
+
+      function sizeFor(value, max, min, range) {
+        return Math.round(min + range * Math.sqrt(value / Math.max(max, 1)));
+      }
+
+      function currentWords() {
+        if (state.scope === "all") return state.data.top_words || [];
+        return (state.data.by_platform && state.data.by_platform[state.scope])
+          || (state.data.by_source && state.data.by_source[state.scope])
+          || [];
       }
 
       function metric(label, value) {
@@ -262,29 +430,116 @@
         ].join("");
       }
 
-      function renderCloud(words) {
-        const cloud = document.querySelector("#cloud");
+      function renderScopes(data) {
+        const names = ["all", ...Object.keys(data.by_platform || {}), ...Object.keys(data.by_source || {})];
+        const uniqueNames = [...new Set(names)];
+        document.querySelector("#scopeChips").innerHTML = uniqueNames.map((name) => (
+          `<button type="button" data-scope="${escapeHtml(name)}" aria-pressed="${name === state.scope}">${escapeHtml(name)}</button>`
+        )).join("");
+      }
+
+      function packBubbles(words, width, height) {
         const max = Math.max(...words.map((word) => word.value), 1);
-        cloud.innerHTML = "";
-        words.forEach((word, index) => {
-          const span = document.createElement("span");
-          span.className = "word";
-          span.textContent = word.text;
-          span.title = `${word.text}: ${word.value}`;
-          span.style.fontSize = `${sizeFor(word.value, max)}px`;
-          span.style.color = palette[index % palette.length];
-          cloud.appendChild(span);
+        const sorted = words.slice(0, 34).map((word, index) => ({
+          ...word,
+          r: sizeFor(word.value, max, 24, 54),
+          color: color(index)
+        }));
+        const placed = [];
+        const centerX = width / 2;
+        const centerY = height / 2;
+        sorted.forEach((node, index) => {
+          let best = { x: centerX, y: centerY };
+          if (index > 0) {
+            for (let angle = 0; angle < 1600; angle += 0.45) {
+              const radius = 6 + angle * 2.3;
+              const x = centerX + Math.cos(angle) * radius;
+              const y = centerY + Math.sin(angle) * radius * 0.72;
+              const inside = x - node.r > 10 && x + node.r < width - 10 && y - node.r > 10 && y + node.r < height - 10;
+              const clear = placed.every((other) => Math.hypot(x - other.x, y - other.y) > node.r + other.r + 5);
+              if (inside && clear) {
+                best = { x, y };
+                break;
+              }
+            }
+          }
+          placed.push({ ...node, ...best });
         });
+        return placed;
+      }
+
+      function renderBubble(words) {
+        const host = document.querySelector("#viz");
+        const width = Math.max(host.clientWidth, 320);
+        const height = Math.max(host.clientHeight, 420);
+        const nodes = packBubbles(words, width, height);
+        host.innerHTML = `
+          <svg id="bubbleSvg" viewBox="0 0 ${width} ${height}" role="img" aria-label="bubble word map">
+            ${nodes.map((node, index) => `
+              <g>
+                <circle cx="${node.x.toFixed(1)}" cy="${node.y.toFixed(1)}" r="${node.r}" fill="${node.color}" opacity="0.9">
+                  <title>${escapeHtml(node.text)}: ${node.value}</title>
+                </circle>
+                <text class="bubble-label" x="${node.x.toFixed(1)}" y="${(node.y - 4).toFixed(1)}" font-size="${Math.max(12, Math.min(20, node.r / 2.3))}">
+                  ${escapeHtml(node.text)}
+                </text>
+                <text class="bubble-value" x="${node.x.toFixed(1)}" y="${(node.y + 16).toFixed(1)}">${node.value}</text>
+              </g>
+            `).join("")}
+          </svg>`;
+      }
+
+      function renderCloud(words) {
+        const max = Math.max(...words.map((word) => word.value), 1);
+        document.querySelector("#viz").innerHTML = `
+          <div class="word-cloud">
+            ${words.slice(0, 80).map((word, index) => `
+              <span class="word" title="${escapeHtml(word.text)}: ${word.value}" style="font-size:${sizeFor(word.value, max, 15, 50)}px;color:${color(index)}">
+                ${escapeHtml(word.text)}
+              </span>
+            `).join("")}
+          </div>`;
+      }
+
+      function renderRadial(words) {
+        const host = document.querySelector("#viz");
+        const width = Math.max(host.clientWidth, 320);
+        const height = Math.max(host.clientHeight, 420);
+        const cx = width / 2;
+        const cy = height / 2;
+        const radius = Math.min(width, height) * 0.34;
+        const selected = words.slice(0, 24);
+        const max = Math.max(...selected.map((word) => word.value), 1);
+        host.innerHTML = `
+          <svg id="radialSvg" viewBox="0 0 ${width} ${height}" role="img" aria-label="radial term map">
+            <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="#d8d5c9" stroke-width="1"/>
+            <circle cx="${cx}" cy="${cy}" r="${Math.max(42, radius * 0.2)}" fill="#18211f"/>
+            <text x="${cx}" y="${cy - 4}" text-anchor="middle" fill="white" font-size="18" font-weight="800">Reverse</text>
+            <text x="${cx}" y="${cy + 18}" text-anchor="middle" fill="rgba(255,255,255,.76)" font-size="12">1999</text>
+            ${selected.map((word, index) => {
+              const angle = (-90 + index * (360 / selected.length)) * Math.PI / 180;
+              const length = radius * (0.7 + 0.32 * Math.sqrt(word.value / max));
+              const x = cx + Math.cos(angle) * length;
+              const y = cy + Math.sin(angle) * length;
+              const dot = sizeFor(word.value, max, 5, 12);
+              const labelX = cx + Math.cos(angle) * (length + 18);
+              const labelY = cy + Math.sin(angle) * (length + 18);
+              return `
+                <line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${color(index)}" stroke-width="2" opacity=".42"/>
+                <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${dot}" fill="${color(index)}"><title>${escapeHtml(word.text)}: ${word.value}</title></circle>
+                <text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="${labelX < cx ? "end" : "start"}" fill="#18211f" font-size="12" font-weight="700">${escapeHtml(word.text)}</text>
+              `;
+            }).join("")}
+          </svg>`;
       }
 
       function renderTable(words) {
-        const table = document.querySelector("#table");
         const max = Math.max(...words.map((word) => word.value), 1);
-        table.innerHTML = words.slice(0, 24).map((word) => `
+        document.querySelector("#table").innerHTML = words.slice(0, 24).map((word, index) => `
           <div class="row">
             <div>
               <b>${escapeHtml(word.text)}</b>
-              <div class="bar"><i style="--w:${Math.max(4, (word.value / max) * 100)}%"></i></div>
+              <div class="bar"><i style="--w:${Math.max(4, (word.value / max) * 100)}%;--c:${color(index)}"></i></div>
             </div>
             <span>${word.value}</span>
           </div>
@@ -292,14 +547,64 @@
       }
 
       function renderSources(data) {
-        const host = document.querySelector("#sources");
-        const groups = Object.entries(data.by_platform || data.by_source || {});
-        host.innerHTML = groups.length ? groups.map(([name, words]) => `
-          <div class="source">
-            <b>${escapeHtml(name)}</b>
-            ${(words || []).slice(0, 10).map((word) => `<span>${escapeHtml(word.text)} ${word.value}</span>`).join("")}
+        const groups = Object.entries(data.by_platform || {}).length ? data.by_platform : data.by_source || {};
+        document.querySelector("#sources").innerHTML = Object.entries(groups).map(([name, words], groupIndex) => {
+          const max = Math.max(...(words || []).map((word) => word.value), 1);
+          return `
+            <div class="source-card">
+              <b>${escapeHtml(name)}</b>
+              <div class="mini-bars">
+                ${(words || []).slice(0, 8).map((word, index) => `
+                  <div class="mini">
+                    <span>${escapeHtml(word.text)}</span>
+                    <span>${word.value}</span>
+                    <div class="bar" style="grid-column:1 / -1"><i style="--w:${Math.max(4, (word.value / max) * 100)}%;--c:${color(groupIndex + index)}"></i></div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>`;
+        }).join("") || "<p>No source groups yet.</p>";
+      }
+
+      function renderDocuments(docs) {
+        document.querySelector("#documents").innerHTML = (docs || []).slice(0, 9).map((doc) => `
+          <div class="doc">
+            <b>${escapeHtml(doc.title || doc.source || "untitled")}</b>
+            <span>${escapeHtml(doc.platform || "unknown")} · ${formatNumber(doc.characters)} chars</span>
+            <span>${escapeHtml(doc.collected_at || "")}</span>
           </div>
-        `).join("") : "<p>No source groups yet.</p>";
+        `).join("") || "<p>No documents yet.</p>";
+      }
+
+      function renderViz() {
+        const words = currentWords();
+        document.querySelector("#scopeLabel").textContent = state.scope === "all" ? "all terms" : state.scope;
+        document.querySelector("#vizTitle").textContent =
+          state.view === "bubble" ? "Bubble Map" : state.view === "radial" ? "Radial Map" : "Word Cloud";
+        document.querySelector("#vizHint").textContent =
+          state.view === "radial" ? "Spokes show top terms around the project core." : "Size follows term frequency.";
+        if (state.view === "bubble") renderBubble(words);
+        if (state.view === "cloud") renderCloud(words);
+        if (state.view === "radial") renderRadial(words);
+        renderTable(words);
+      }
+
+      function bindControls() {
+        document.querySelectorAll("[data-view]").forEach((button) => {
+          button.addEventListener("click", () => {
+            state.view = button.dataset.view;
+            document.querySelectorAll("[data-view]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+            renderViz();
+          });
+        });
+        document.querySelector("#scopeChips").addEventListener("click", (event) => {
+          const button = event.target.closest("[data-scope]");
+          if (!button) return;
+          state.scope = button.dataset.scope;
+          document.querySelectorAll("[data-scope]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+          renderViz();
+        });
+        window.addEventListener("resize", () => renderViz());
       }
 
       async function loadData() {
@@ -315,11 +620,13 @@
       }
 
       loadData().then((data) => {
-        const words = data.top_words || [];
+        state.data = data;
         renderMetrics(data.summary || fallback.summary);
-        renderCloud(words);
-        renderTable(words);
+        renderScopes(data);
+        bindControls();
+        renderViz();
         renderSources(data);
+        renderDocuments(data.documents);
         document.querySelector("#footer").textContent =
           `Generated at ${data.generated_at}. Mode: ${(data.summary || {}).mode || "unknown"}. Aggregated data only.`;
       });
