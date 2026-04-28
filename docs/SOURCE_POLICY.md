@@ -9,6 +9,13 @@ Accepted sources:
 - RSS/Atom feeds
 - Public pages that permit ordinary browser access and reasonable automated fetching
 
+Collection limits:
+
+- Keep the default analysis window at 365 days or less.
+- Use `crawl_depth` and `max_pages` to bound each source.
+- Keep `allow_domains` narrow.
+- Enable one community/search platform at a time and inspect the output before expanding.
+
 Rejected sources:
 
 - Login-only pages
