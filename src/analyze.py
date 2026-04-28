@@ -6,7 +6,7 @@ import json
 import math
 import re
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import median
 
@@ -38,6 +38,18 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+def parse_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except ValueError:
+        return None
+
+
 def read_lines(path: Path) -> list[str]:
     if not path.exists():
         return []
@@ -62,11 +74,13 @@ def load_lexicon(path: Path) -> list[str]:
     return words
 
 
-def iter_corpus_records(corpus_dir: Path) -> list[dict]:
+def iter_corpus_records(corpus_dir: Path, max_age_days: int) -> list[dict]:
     records: list[dict] = []
     if not corpus_dir.exists():
         return records
 
+    cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+    seen: set[str] = set()
     for path in sorted(corpus_dir.glob("*.jsonl")):
         for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
             if not line.strip():
@@ -76,6 +90,13 @@ def iter_corpus_records(corpus_dir: Path) -> list[dict]:
             except json.JSONDecodeError:
                 continue
             if record.get("text"):
+                record_date = parse_datetime(record.get("published_at")) or parse_datetime(record.get("collected_at"))
+                if record_date and record_date < cutoff:
+                    continue
+                key = record.get("id") or f"{record.get('url', '')}:{record.get('title', '')}"
+                if key in seen:
+                    continue
+                seen.add(key)
                 records.append(record)
     return records
 
@@ -174,7 +195,7 @@ def source_items(counters: dict[str, Counter[str]], limit: int) -> dict[str, lis
     return {source: word_items(counter, limit) for source, counter in sorted(counters.items())}
 
 
-def build_payload(records: list[dict], stopwords: set[str], lexicon: list[str], limit: int) -> dict:
+def build_payload(records: list[dict], stopwords: set[str], lexicon: list[str], limit: int, max_age_days: int) -> dict:
     global_counter: Counter[str] = Counter()
     source_counters: dict[str, Counter[str]] = defaultdict(Counter)
     platform_counters: dict[str, Counter[str]] = defaultdict(Counter)
@@ -205,6 +226,7 @@ def build_payload(records: list[dict], stopwords: set[str], lexicon: list[str], 
             "sources": sorted({record.get("source", "unknown") for record in relevant_records}),
             "platforms": sorted({record.get("platform", "unknown") for record in relevant_records}),
             "mode": "sample" if all(record.get("platform") == "sample" for record in relevant_records) else "collected",
+            "window_days": max_age_days,
         },
         "top_words": word_items(global_counter, limit),
         "by_source": source_items(source_counters, 30),
@@ -215,6 +237,7 @@ def build_payload(records: list[dict], stopwords: set[str], lexicon: list[str], 
                 "platform": record.get("platform", "unknown"),
                 "title": record.get("title", ""),
                 "characters": record.get("characters", 0),
+                "published_at": record.get("published_at", ""),
                 "collected_at": record.get("collected_at", ""),
                 "url": record.get("url", ""),
             }
@@ -278,15 +301,16 @@ def main() -> None:
     parser.add_argument("--corpus-dir", type=Path, default=CORPUS_DIR)
     parser.add_argument("--allow-sample", action="store_true", default=True)
     parser.add_argument("--sample-only", action="store_true")
+    parser.add_argument("--max-age-days", type=int, default=365)
     args = parser.parse_args()
 
     stopwords = read_stopwords(STOPWORDS_PATH)
     lexicon = load_lexicon(LEXICON_PATH)
-    records = [] if args.sample_only else iter_corpus_records(args.corpus_dir)
+    records = [] if args.sample_only else iter_corpus_records(args.corpus_dir, args.max_age_days)
     if not records and args.allow_sample:
         records = sample_records(SAMPLE_DIR)
 
-    payload = build_payload(records, stopwords, lexicon, args.limit)
+    payload = build_payload(records, stopwords, lexicon, args.limit, args.max_age_days)
     write_json(payload, DOCS_DIR / "data.json")
     write_json(payload["top_words"], DOCS_DIR / "wordcloud.json")
     write_svg(payload["top_words"], DOCS_DIR / "wordcloud.svg")
