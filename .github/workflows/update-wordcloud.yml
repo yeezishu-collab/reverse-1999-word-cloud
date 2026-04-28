@@ -21,12 +21,10 @@ jobs:
       - name: Collect configured sources
         run: |
           if [ -f data/sources.json ]; then
-            python src/collect.py
+            python src/update.py --max-age-days 365 --limit 220
           else
-            echo "data/sources.json is missing; skipping collection."
+            python src/update.py --sample-only --limit 220
           fi
-      - name: Build word cloud
-        run: python src/analyze.py --limit 160
       - name: Commit generated docs
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
