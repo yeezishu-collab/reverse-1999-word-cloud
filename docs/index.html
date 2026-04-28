@@ -426,7 +426,7 @@
           metric("documents", summary.documents),
           metric("tokens", summary.tokens),
           metric("unique terms", summary.unique_terms),
-          metric("median chars", summary.median_document_characters)
+          metric("window days", summary.window_days || 365)
         ].join("");
       }
 
