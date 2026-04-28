@@ -11,6 +11,7 @@
 - 内置《重返未来：1999》角色、系统、玩法词典
 - 生成总词频、按来源词频、按平台词频
 - 输出 GitHub Pages 仪表盘数据：`docs/data.json`
+- 前端支持气泡图、传统词云、放射图、排行条形图和来源矩阵
 - 保留兼容词云数据：`docs/wordcloud.json`
 - 输出静态 SVG：`docs/wordcloud.svg`
 - GitHub Actions 可定时刷新
@@ -125,6 +126,14 @@ python src\analyze.py --sample-only --limit 160
 2. Source 选择 **Deploy from a branch**
 3. Branch 选择 `main`
 4. Directory 选择 `/docs`
+
+页面包含三种主要视图：
+
+- **Bubble Map**：用圆面积表达高频词权重，适合快速扫热点
+- **Word Cloud**：传统词云，适合截图和传播
+- **Radial Map**：把关键词围绕项目核心展开，适合看关键词分布
+
+右上角的 scope 按钮会根据 `docs/data.json` 自动生成，可以在全部词频、平台词频和来源词频之间切换。
 
 ## 后续路线
 
