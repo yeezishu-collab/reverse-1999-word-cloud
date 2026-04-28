@@ -412,6 +412,10 @@
 
       function currentWords() {
         if (state.scope === "all") return state.data.top_words || [];
+        if (state.scope.startsWith("version:")) {
+          const versionId = state.scope.slice("version:".length);
+          return ((state.data.by_version || {})[versionId] || {}).top_words || [];
+        }
         return (state.data.by_platform && state.data.by_platform[state.scope])
           || (state.data.by_source && state.data.by_source[state.scope])
           || [];
@@ -431,11 +435,27 @@
       }
 
       function renderScopes(data) {
-        const names = ["all", ...Object.keys(data.by_platform || {}), ...Object.keys(data.by_source || {})];
+        const versionScopes = (data.versions || []).map((version) => `version:${version.id}`);
+        const names = ["all", ...versionScopes, ...Object.keys(data.by_platform || {}), ...Object.keys(data.by_source || {})];
         const uniqueNames = [...new Set(names)];
         document.querySelector("#scopeChips").innerHTML = uniqueNames.map((name) => (
-          `<button type="button" data-scope="${escapeHtml(name)}" aria-pressed="${name === state.scope}">${escapeHtml(name)}</button>`
+          `<button type="button" data-scope="${escapeHtml(name)}" aria-pressed="${name === state.scope}">${escapeHtml(scopeLabel(name))}</button>`
         )).join("");
+      }
+
+      function scopeLabel(scope) {
+        if (!scope.startsWith("version:")) return scope;
+        return `v${scope.slice("version:".length)}`;
+      }
+
+      function versionDetail(scope) {
+        if (!scope.startsWith("version:")) return "";
+        const versionId = scope.slice("version:".length);
+        const version = (state.data.by_version || {})[versionId];
+        if (!version) return "";
+        const start = version.start ? version.start.slice(0, 10) : "";
+        const end = version.end ? version.end.slice(0, 10) : "";
+        return `${version.name || version.id} · ${start} to ${end}`;
       }
 
       function packBubbles(words, width, height) {
@@ -578,7 +598,8 @@
 
       function renderViz() {
         const words = currentWords();
-        document.querySelector("#scopeLabel").textContent = state.scope === "all" ? "all terms" : state.scope;
+        document.querySelector("#scopeLabel").textContent =
+          state.scope === "all" ? "all terms" : versionDetail(state.scope) || state.scope;
         document.querySelector("#vizTitle").textContent =
           state.view === "bubble" ? "Bubble Map" : state.view === "radial" ? "Radial Map" : "Word Cloud";
         document.querySelector("#vizHint").textContent =
