@@ -10,6 +10,7 @@
     "tokens": 120,
     "unique_terms": 80,
     "median_document_characters": 190,
+    "window_days": 365,
     "sources": ["overview"],
     "platforms": ["sample"],
     "mode": "sample"
