@@ -1,0 +1,158 @@
+[
+  {
+    "id": "3.5",
+    "name": "三相之轮",
+    "start": "2026-03-04T21:00:00+00:00",
+    "end": "2026-04-08T21:00:00+00:00",
+    "source": "inferred-from-adjacent-windows",
+    "documents": 1,
+    "tokens": 18,
+    "unique_terms": 18,
+    "top_words": [
+      {
+        "text": "苏芙比",
+        "value": 1
+      },
+      {
+        "text": "槲寄生",
+        "value": 1
+      },
+      {
+        "text": "红弩箭",
+        "value": 1
+      },
+      {
+        "text": "星锑",
+        "value": 1
+      },
+      {
+        "text": "牙仙",
+        "value": 1
+      },
+      {
+        "text": "洁西卡",
+        "value": 1
+      },
+      {
+        "text": "曲娘",
+        "value": 1
+      },
+      {
+        "text": "伊索尔德",
+        "value": 1
+      },
+      {
+        "text": "露西",
+        "value": 1
+      },
+      {
+        "text": "卡卡尼亚",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "3.6",
+    "name": "版本3.6",
+    "start": "2026-04-08T21:00:00+00:00",
+    "end": "2026-04-29T21:00:00+00:00",
+    "source": "user-provided",
+    "documents": 1,
+    "tokens": 29,
+    "unique_terms": 28,
+    "top_words": [
+      {
+        "text": "主线剧情",
+        "value": 2
+      },
+      {
+        "text": "维尔汀",
+        "value": 1
+      },
+      {
+        "text": "十四行诗",
+        "value": 1
+      },
+      {
+        "text": "箱中世界",
+        "value": 1
+      },
+      {
+        "text": "暴雨",
+        "value": 1
+      },
+      {
+        "text": "司辰",
+        "value": 1
+      },
+      {
+        "text": "神秘学家",
+        "value": 1
+      },
+      {
+        "text": "剧情体验",
+        "value": 1
+      },
+      {
+        "text": "世界观",
+        "value": 1
+      },
+      {
+        "text": "版本活动",
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": "3.7",
+    "name": "三周年版本",
+    "start": "2026-04-29T21:00:00+00:00",
+    "end": "2026-06-10T21:00:00+00:00",
+    "source": "announced-start-plus-standard-window",
+    "documents": 1,
+    "tokens": 19,
+    "unique_terms": 19,
+    "top_words": [
+      {
+        "text": "心相",
+        "value": 1
+      },
+      {
+        "text": "洞悉",
+        "value": 1
+      },
+      {
+        "text": "共鸣",
+        "value": 1
+      },
+      {
+        "text": "塑造",
+        "value": 1
+      },
+      {
+        "text": "荒原",
+        "value": 1
+      },
+      {
+        "text": "尘埃运动",
+        "value": 1
+      },
+      {
+        "text": "意志解析",
+        "value": 1
+      },
+      {
+        "text": "深眠域",
+        "value": 1
+      },
+      {
+        "text": "鬃毛邮报",
+        "value": 1
+      },
+      {
+        "text": "人工梦游",
+        "value": 1
+      }
+    ]
+  }
+]
