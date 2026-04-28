@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from email.utils import parsedate_to_datetime
 import hashlib
 import json
 import re
@@ -10,7 +11,7 @@ from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Iterable
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 
@@ -27,6 +28,7 @@ except ImportError:  # pragma: no cover - standard-library fallback
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SOURCES = ROOT / "data" / "sources.json"
+EXAMPLE_SOURCES = ROOT / "data" / "sources.example.json"
 RAW_DIR = ROOT / "data" / "raw"
 CORPUS_DIR = ROOT / "data" / "corpus"
 METADATA_PATH = ROOT / "data" / "metadata.jsonl"
@@ -46,6 +48,10 @@ class Source:
     tags: list[str] = field(default_factory=list)
     enabled: bool = True
     selector: str | None = None
+    crawl_depth: int = 0
+    max_pages: int = 1
+    allow_domains: list[str] = field(default_factory=list)
+    include_patterns: list[str] = field(default_factory=list)
 
 
 def now_utc() -> str:
@@ -54,9 +60,13 @@ def now_utc() -> str:
 
 def load_sources(path: Path) -> list[Source]:
     if not path.exists():
-        raise FileNotFoundError(
-            f"Missing {path}. Copy data/sources.example.json to data/sources.json first."
-        )
+        if path == DEFAULT_SOURCES and EXAMPLE_SOURCES.exists():
+            print(f"Missing {path}; using {EXAMPLE_SOURCES} as a starter source list.")
+            path = EXAMPLE_SOURCES
+        else:
+            raise FileNotFoundError(
+                f"Missing {path}. Copy data/sources.example.json to data/sources.json first."
+            )
 
     payload = json.loads(path.read_text(encoding="utf-8"))
     sources: list[Source] = []
@@ -70,6 +80,10 @@ def load_sources(path: Path) -> list[Source]:
                 tags=list(item.get("tags", [])),
                 enabled=bool(item.get("enabled", True)),
                 selector=item.get("selector"),
+                crawl_depth=int(item.get("crawl_depth", 0)),
+                max_pages=int(item.get("max_pages", 1)),
+                allow_domains=list(item.get("allow_domains", [])),
+                include_patterns=list(item.get("include_patterns", [])),
             )
         )
     return sources
@@ -99,6 +113,24 @@ def normalize_space(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def normalize_datetime(value: str | None) -> str:
+    if not value:
+        return ""
+    text = normalize_space(value)
+    for parser in (
+        lambda raw: datetime.fromisoformat(raw.replace("Z", "+00:00")),
+        parsedate_to_datetime,
+    ):
+        try:
+            parsed = parser(text)
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            return parsed.astimezone(timezone.utc).isoformat(timespec="seconds")
+        except (TypeError, ValueError, IndexError, OverflowError):
+            continue
+    return ""
+
+
 class TextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -106,12 +138,23 @@ class TextExtractor(HTMLParser):
         self.title_depth = 0
         self.title_parts: list[str] = []
         self.text_parts: list[str] = []
+        self.links: list[str] = []
+        self.meta_dates: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attr_map = {key.lower(): value for key, value in attrs if key and value}
         if tag in {"script", "style", "noscript", "svg", "iframe"}:
             self.skip_depth += 1
         if tag == "title":
             self.title_depth += 1
+        if tag == "a" and attr_map.get("href"):
+            self.links.append(attr_map["href"])
+        if tag == "meta":
+            key = (attr_map.get("property") or attr_map.get("name") or "").lower()
+            if key in {"article:published_time", "article:modified_time", "pubdate", "date", "datepublished"}:
+                self.meta_dates.append(attr_map.get("content", ""))
+        if tag == "time" and attr_map.get("datetime"):
+            self.meta_dates.append(attr_map["datetime"])
 
     def handle_endtag(self, tag: str) -> None:
         if tag in {"script", "style", "noscript", "svg", "iframe"} and self.skip_depth:
@@ -132,6 +175,17 @@ def fallback_extract_page_text(payload: str) -> tuple[str, str]:
     return normalize_space(" ".join(parser.title_parts)), normalize_space(" ".join(parser.text_parts))
 
 
+def fallback_extract_page_details(payload: str) -> tuple[str, str, list[str], str]:
+    parser = TextExtractor()
+    parser.feed(payload)
+    return (
+        normalize_space(" ".join(parser.title_parts)),
+        normalize_space(" ".join(parser.text_parts)),
+        parser.links,
+        normalize_datetime(next((date for date in parser.meta_dates if date), "")),
+    )
+
+
 def document_title(soup) -> str:
     if soup.title and soup.title.string:
         return normalize_space(soup.title.string)
@@ -141,12 +195,37 @@ def document_title(soup) -> str:
     return ""
 
 
+def document_date(soup) -> str:
+    candidates = []
+    for selector in [
+        {"property": "article:published_time"},
+        {"property": "article:modified_time"},
+        {"name": "date"},
+        {"name": "datePublished"},
+        {"itemprop": "datePublished"},
+    ]:
+        tag = soup.find("meta", attrs=selector)
+        if tag and tag.get("content"):
+            candidates.append(tag.get("content"))
+    for tag in soup.find_all("time"):
+        if tag.get("datetime"):
+            candidates.append(tag.get("datetime"))
+    return normalize_datetime(next((date for date in candidates if date), ""))
+
+
 def extract_page_text(html: str, selector: str | None = None) -> tuple[str, str]:
+    title, text, _, _ = extract_page_details(html, selector)
+    return title, text
+
+
+def extract_page_details(html: str, selector: str | None = None) -> tuple[str, str, list[str], str]:
     if BeautifulSoup is None:
-        return fallback_extract_page_text(html)
+        return fallback_extract_page_details(html)
 
     soup = BeautifulSoup(html, "html.parser")
     title = document_title(soup)
+    published_at = document_date(soup)
+    links = [tag.get("href", "") for tag in soup.find_all("a") if tag.get("href")]
     for tag in soup(["script", "style", "noscript", "svg", "iframe"]):
         tag.decompose()
 
@@ -159,7 +238,7 @@ def extract_page_text(html: str, selector: str | None = None) -> tuple[str, str]
             text = " ".join(node.get_text(" ") for node in candidates)
         else:
             text = soup.get_text(" ")
-    return title, normalize_space(text)
+    return title, normalize_space(text), links, published_at
 
 
 def extract_rss_records(xml: str, source: Source) -> list[dict]:
@@ -174,9 +253,16 @@ def extract_rss_records(xml: str, source: Source) -> list[dict]:
             tag = item.find(tag_name)
             if tag:
                 fields.append(tag.get_text(" "))
+        published_at = ""
+        for tag_name in ["pubDate", "published", "updated", "dc:date"]:
+            tag = item.find(tag_name)
+            if tag:
+                published_at = normalize_datetime(tag.get_text(" "))
+                if published_at:
+                    break
         text = normalize_space(" ".join(fields))
         if text:
-            records.append(build_record(source, text=text, title="", suffix=str(index)))
+            records.append(build_record(source, text=text, title="", suffix=str(index), published_at=published_at))
     return records
 
 
@@ -189,9 +275,16 @@ def fallback_extract_rss_records(xml: str, source: Source) -> list[dict]:
             node = item.find(tag_name)
             if node is not None and node.text:
                 fields.append(node.text)
+        published_at = ""
+        for tag_name in ["pubDate", "published", "updated"]:
+            node = item.find(tag_name)
+            if node is not None and node.text:
+                published_at = normalize_datetime(node.text)
+                if published_at:
+                    break
         text = normalize_space(" ".join(fields))
         if text:
-            records.append(build_record(source, text=text, title="", suffix=str(index)))
+            records.append(build_record(source, text=text, title="", suffix=str(index), published_at=published_at))
     return records
 
 
@@ -203,18 +296,29 @@ def safe_stem(source: Source) -> str:
     return f"{name}-{host}-{digest}"
 
 
-def build_record(source: Source, text: str, title: str = "", suffix: str = "page") -> dict:
-    doc_id = hashlib.sha1(f"{source.url}:{suffix}:{text[:500]}".encode("utf-8")).hexdigest()
+def build_record(
+    source: Source,
+    text: str,
+    title: str = "",
+    suffix: str = "page",
+    url: str | None = None,
+    depth: int = 0,
+    published_at: str = "",
+) -> dict:
+    record_url = url or source.url
+    doc_id = hashlib.sha1(f"{record_url}:{suffix}:{text[:500]}".encode("utf-8")).hexdigest()
     return {
         "id": doc_id,
         "source": source.name,
         "platform": source.platform,
         "type": source.type,
-        "url": source.url,
+        "url": record_url,
         "title": title,
         "tags": source.tags,
+        "depth": depth,
         "text": text,
         "characters": len(text),
+        "published_at": published_at,
         "collected_at": now_utc(),
     }
 
@@ -243,7 +347,50 @@ def append_metadata(records: Iterable[dict]) -> None:
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
-def collect(sources: list[Source], timeout: int, delay: float, keep_raw: bool) -> list[dict]:
+def default_keywords() -> list[str]:
+    return [
+        "重返未来",
+        "重返未来1999",
+        "Reverse 1999",
+        "Reverse: 1999",
+        "维尔汀",
+        "十四行诗",
+        "心相",
+        "洞悉",
+        "共鸣",
+        "鬃毛邮报",
+        "深眠域",
+    ]
+
+
+def url_allowed(source: Source, url: str) -> bool:
+    parsed_seed = urlparse(source.url)
+    parsed = urlparse(url)
+    allowed_domains = source.allow_domains or [parsed_seed.netloc]
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    if parsed.netloc not in allowed_domains:
+        return False
+    patterns = source.include_patterns
+    if patterns and not any(re.search(pattern, url, re.IGNORECASE) for pattern in patterns):
+        return False
+    return True
+
+
+def relevant_for_expansion(title: str, text: str, url: str, keywords: list[str]) -> bool:
+    haystack = f"{title} {text[:2000]} {url}".lower()
+    return any(keyword.lower() in haystack for keyword in keywords)
+
+
+def normalize_link(base_url: str, href: str) -> str:
+    joined = urljoin(base_url, href.split("#", 1)[0])
+    parsed = urlparse(joined)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return ""
+    return joined
+
+
+def collect(sources: list[Source], timeout: int, delay: float, keep_raw: bool, keywords: list[str]) -> list[dict]:
     records: list[dict] = []
     enabled_sources = [source for source in sources if source.enabled]
     for index, source in enumerate(enabled_sources, start=1):
@@ -256,8 +403,7 @@ def collect(sources: list[Source], timeout: int, delay: float, keep_raw: bool) -
             if source.type == "rss":
                 source_records = extract_rss_records(payload, source)
             elif source.type == "page":
-                title, text = extract_page_text(payload, source.selector)
-                source_records = [build_record(source, title=title, text=text)]
+                source_records = crawl_page_source(source, payload, timeout, delay, keep_raw, keywords)
             else:
                 raise ValueError(f"Unsupported source type: {source.type}")
 
@@ -278,6 +424,57 @@ def collect(sources: list[Source], timeout: int, delay: float, keep_raw: bool) -
     return records
 
 
+def crawl_page_source(
+    source: Source,
+    seed_payload: str,
+    timeout: int,
+    delay: float,
+    keep_raw: bool,
+    keywords: list[str],
+) -> list[dict]:
+    records: list[dict] = []
+    queue: list[tuple[str, int, str | None]] = [(source.url, 0, seed_payload)]
+    seen: set[str] = set()
+    max_pages = max(1, source.max_pages)
+    max_depth = max(0, source.crawl_depth)
+
+    while queue and len(seen) < max_pages:
+        url, depth, preloaded = queue.pop(0)
+        if url in seen or not url_allowed(source, url):
+            continue
+        seen.add(url)
+        payload = preloaded if preloaded is not None else fetch(url, timeout)
+        if keep_raw and preloaded is None:
+            save_raw(Source(**{**source.__dict__, "url": url}), payload)
+        title, text, links, published_at = extract_page_details(payload, source.selector)
+        if relevant_for_expansion(title, text, url, keywords):
+            records.append(
+                build_record(
+                    source,
+                    title=title,
+                    text=text,
+                    url=url,
+                    suffix=f"depth-{depth}-{len(seen)}",
+                    depth=depth,
+                    published_at=published_at,
+                )
+            )
+
+        if depth >= max_depth:
+            continue
+
+        for href in links:
+            next_url = normalize_link(url, href)
+            if next_url and next_url not in seen and url_allowed(source, next_url):
+                queue.append((next_url, depth + 1, None))
+                if len(seen) + len(queue) >= max_pages:
+                    break
+        if delay and queue:
+            time.sleep(delay)
+
+    return records
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Collect Reverse: 1999 public text sources.")
     parser.add_argument("--sources", type=Path, default=DEFAULT_SOURCES)
@@ -285,11 +482,15 @@ def main() -> None:
     parser.add_argument("--delay", type=float, default=1.0)
     parser.add_argument("--keep-raw", action="store_true")
     parser.add_argument("--output", type=Path, default=CORPUS_DIR / "latest.jsonl")
+    parser.add_argument("--keywords", nargs="*", default=default_keywords())
+    parser.add_argument("--replace", action="store_true", help="Replace output corpus instead of appending.")
     args = parser.parse_args()
 
     sources = load_sources(args.sources)
-    records = collect(sources, timeout=args.timeout, delay=args.delay, keep_raw=args.keep_raw)
+    records = collect(sources, timeout=args.timeout, delay=args.delay, keep_raw=args.keep_raw, keywords=args.keywords)
     good_records = [record for record in records if "text" in record]
+    if args.replace and args.output.exists():
+        args.output.unlink()
     write_corpus(good_records, args.output)
     append_metadata(records)
     print(f"Collected {len(good_records)} document(s); {len(records) - len(good_records)} error(s).")
