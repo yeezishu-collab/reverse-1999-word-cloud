@@ -7,6 +7,9 @@
 ## 当前能力
 
 - 配置式采集公开网页或 RSS/Atom
+- 一键更新入口：采集最新公开内容并重建词云
+- 默认分析时间窗口为近 365 天
+- 支持从种子页按限定域名、关键词和深度扩展采集
 - 输出结构化 JSONL 语料到 `data/corpus/`
 - 内置《重返未来：1999》角色、系统、玩法词典
 - 生成总词频、按来源词频、按平台词频
@@ -32,7 +35,8 @@
 │   └── wordcloud.svg           # 静态词云
 └── src/
     ├── collect.py              # 采集公开来源
-    └── analyze.py              # 清洗、分词、统计、生成页面数据
+    ├── analyze.py              # 清洗、分词、统计、生成页面数据
+    └── update.py               # 一键采集并刷新仪表盘
 ```
 
 ## 快速开始
@@ -83,15 +87,27 @@ Copy-Item data\sources.example.json data\sources.json
 运行采集和分析：
 
 ```powershell
-python src\collect.py --delay 2
-python src\analyze.py --limit 160
+python src\update.py --max-age-days 365 --limit 220
 ```
 
 如果你只想刷新演示页：
 
 ```powershell
-python src\analyze.py --sample-only --limit 160
+python src\update.py --sample-only --limit 220
 ```
+
+在 PyCharm 里可以直接给 `src/update.py` 建一个 Run Configuration：
+
+```text
+--max-age-days 365 --limit 220
+```
+
+这样每次运行都会：
+
+1. 读取 `data/sources.json`，如果没有就读取 `data/sources.example.json`
+2. 采集最新公开内容到 `data/corpus/run-*.jsonl`
+3. 只统计近 365 天内的记录
+4. 刷新 `docs/data.json`、`docs/wordcloud.json` 和 `docs/wordcloud.svg`
 
 ## 数据源策略
 
@@ -102,6 +118,15 @@ python src\analyze.py --sample-only --limit 160
 3. 支持 RSS/Atom 的社区或搜索结果
 4. 明确允许公开访问和合理抓取的平台页面
 5. 需要登录、验证码、绕过反爬或接口逆向的平台暂不纳入
+
+`data/sources.example.json` 里提供了多个平台模板。默认只启用较稳的公开来源；Bilibili、TapTap、知乎、Reddit 等搜索页模板默认关闭，你可以复制到 `data/sources.json` 后逐个把 `enabled` 改成 `true`。建议一次只打开一个平台，确认结果质量和访问稳定性后再扩大范围。
+
+深度采集字段：
+
+- `crawl_depth`：从种子页向下扩展的链接层数，建议 0-2
+- `max_pages`：单个来源最多抓取页面数，建议 5-30
+- `allow_domains`：允许继续抓取的域名白名单
+- `include_patterns`：URL 必须命中的关键词或正则片段
 
 关键词建议：
 
