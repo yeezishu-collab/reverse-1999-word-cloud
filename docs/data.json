@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-28T10:26:42+00:00",
+  "generated_at": "2026-04-28T17:02:13+00:00",
   "summary": {
     "documents": 3,
-    "tokens": 109,
-    "unique_terms": 91,
+    "tokens": 66,
+    "unique_terms": 56,
     "median_document_characters": 121,
     "sources": [
       "characters",
@@ -13,23 +13,12 @@
     "platforms": [
       "sample"
     ],
-    "mode": "sample"
+    "mode": "sample",
+    "window_days": 365
   },
   "top_words": [
     {
-      "text": "角色",
-      "value": 3
-    },
-    {
-      "text": "经常",
-      "value": 3
-    },
-    {
       "text": "强度",
-      "value": 2
-    },
-    {
-      "text": "剧情",
       "value": 2
     },
     {
@@ -42,10 +31,6 @@
     },
     {
       "text": "主线剧情",
-      "value": 2
-    },
-    {
-      "text": "出现",
       "value": 2
     },
     {
@@ -70,14 +55,6 @@
     },
     {
       "text": "人工梦游",
-      "value": 2
-    },
-    {
-      "text": "玩法",
-      "value": 2
-    },
-    {
-      "text": "关注",
       "value": 2
     },
     {
@@ -121,27 +98,7 @@
       "value": 1
     },
     {
-      "text": "放在",
-      "value": 1
-    },
-    {
       "text": "抽卡",
-      "value": 1
-    },
-    {
-      "text": "建议",
-      "value": 1
-    },
-    {
-      "text": "版本",
-      "value": 1
-    },
-    {
-      "text": "环境",
-      "value": 1
-    },
-    {
-      "text": "提到",
       "value": 1
     },
     {
@@ -161,35 +118,11 @@
       "value": 1
     },
     {
-      "text": "互动",
-      "value": 1
-    },
-    {
-      "text": "其他",
-      "value": 1
-    },
-    {
-      "text": "关系",
-      "value": 1
-    },
-    {
       "text": "维尔汀",
       "value": 1
     },
     {
       "text": "十四行诗",
-      "value": 1
-    },
-    {
-      "text": "仍然",
-      "value": 1
-    },
-    {
-      "text": "高频",
-      "value": 1
-    },
-    {
-      "text": "名字",
       "value": 1
     },
     {
@@ -209,23 +142,7 @@
       "value": 1
     },
     {
-      "text": "设定",
-      "value": 1
-    },
-    {
-      "text": "一起",
-      "value": 1
-    },
-    {
       "text": "版本活动",
-      "value": 1
-    },
-    {
-      "text": "上线",
-      "value": 1
-    },
-    {
-      "text": "集中",
       "value": 1
     },
     {
@@ -234,26 +151,6 @@
     },
     {
       "text": "配队",
-      "value": 1
-    },
-    {
-      "text": "材料",
-      "value": 1
-    },
-    {
-      "text": "养成",
-      "value": 1
-    },
-    {
-      "text": "常驻",
-      "value": 1
-    },
-    {
-      "text": "用来",
-      "value": 1
-    },
-    {
-      "text": "评价",
       "value": 1
     },
     {
@@ -270,18 +167,6 @@
     },
     {
       "text": "美术",
-      "value": 1
-    },
-    {
-      "text": "表现",
-      "value": 1
-    },
-    {
-      "text": "核心",
-      "value": 1
-    },
-    {
-      "text": "战斗",
       "value": 1
     },
     {
@@ -321,26 +206,6 @@
       "value": 1
     },
     {
-      "text": "构成",
-      "value": 1
-    },
-    {
-      "text": "日常",
-      "value": 1
-    },
-    {
-      "text": "关键词",
-      "value": 1
-    },
-    {
-      "text": "新手",
-      "value": 1
-    },
-    {
-      "text": "搜索",
-      "value": 1
-    },
-    {
       "text": "开荒阵容",
       "value": 1
     },
@@ -358,10 +223,6 @@
     },
     {
       "text": "零氪",
-      "value": 1
-    },
-    {
-      "text": "关心",
       "value": 1
     },
     {
@@ -383,10 +244,6 @@
   ],
   "by_source": {
     "characters": [
-      {
-        "text": "角色",
-        "value": 2
-      },
       {
         "text": "苏芙比",
         "value": 1
@@ -428,14 +285,6 @@
         "value": 1
       },
       {
-        "text": "经常",
-        "value": 1
-      },
-      {
-        "text": "放在",
-        "value": 1
-      },
-      {
         "text": "强度",
         "value": 1
       },
@@ -444,31 +293,11 @@
         "value": 1
       },
       {
-        "text": "建议",
-        "value": 1
-      },
-      {
-        "text": "版本",
-        "value": 1
-      },
-      {
-        "text": "环境",
-        "value": 1
-      },
-      {
-        "text": "提到",
-        "value": 1
-      },
-      {
         "text": "数值",
         "value": 1
       },
       {
         "text": "人设",
-        "value": 1
-      },
-      {
-        "text": "剧情",
         "value": 1
       },
       {
@@ -484,19 +313,7 @@
         "value": 1
       },
       {
-        "text": "互动",
-        "value": 1
-      },
-      {
-        "text": "其他",
-        "value": 1
-      },
-      {
         "text": "神秘学家",
-        "value": 1
-      },
-      {
-        "text": "关系",
         "value": 1
       }
     ],
@@ -506,31 +323,11 @@
         "value": 2
       },
       {
-        "text": "出现",
-        "value": 2
-      },
-      {
-        "text": "关注",
-        "value": 2
-      },
-      {
         "text": "维尔汀",
         "value": 1
       },
       {
         "text": "十四行诗",
-        "value": 1
-      },
-      {
-        "text": "仍然",
-        "value": 1
-      },
-      {
-        "text": "高频",
-        "value": 1
-      },
-      {
-        "text": "名字",
         "value": 1
       },
       {
@@ -550,10 +347,6 @@
         "value": 1
       },
       {
-        "text": "经常",
-        "value": 1
-      },
-      {
         "text": "剧情体验",
         "value": 1
       },
@@ -562,23 +355,7 @@
         "value": 1
       },
       {
-        "text": "设定",
-        "value": 1
-      },
-      {
-        "text": "一起",
-        "value": 1
-      },
-      {
         "text": "版本活动",
-        "value": 1
-      },
-      {
-        "text": "上线",
-        "value": 1
-      },
-      {
-        "text": "集中",
         "value": 1
       },
       {
@@ -598,15 +375,7 @@
         "value": 1
       },
       {
-        "text": "材料",
-        "value": 1
-      },
-      {
         "text": "共鸣",
-        "value": 1
-      },
-      {
-        "text": "养成",
         "value": 1
       },
       {
@@ -619,6 +388,46 @@
       },
       {
         "text": "人工梦游",
+        "value": 1
+      },
+      {
+        "text": "强度",
+        "value": 1
+      },
+      {
+        "text": "队伍循环",
+        "value": 1
+      },
+      {
+        "text": "角色塑造",
+        "value": 1
+      },
+      {
+        "text": "配音",
+        "value": 1
+      },
+      {
+        "text": "美术",
+        "value": 1
+      },
+      {
+        "text": "伤害曲线",
+        "value": 1
+      },
+      {
+        "text": "行动点",
+        "value": 1
+      },
+      {
+        "text": "激情循环",
+        "value": 1
+      },
+      {
+        "text": "队伍兼容性",
+        "value": 1
+      },
+      {
+        "text": "关卡机制",
         "value": 1
       }
     ],
@@ -664,34 +473,6 @@
         "value": 1
       },
       {
-        "text": "构成",
-        "value": 1
-      },
-      {
-        "text": "日常",
-        "value": 1
-      },
-      {
-        "text": "玩法",
-        "value": 1
-      },
-      {
-        "text": "关键词",
-        "value": 1
-      },
-      {
-        "text": "新手",
-        "value": 1
-      },
-      {
-        "text": "经常",
-        "value": 1
-      },
-      {
-        "text": "搜索",
-        "value": 1
-      },
-      {
         "text": "开荒阵容",
         "value": 1
       },
@@ -709,10 +490,6 @@
       },
       {
         "text": "零氪",
-        "value": 1
-      },
-      {
-        "text": "关心",
         "value": 1
       },
       {
@@ -736,19 +513,7 @@
   "by_platform": {
     "sample": [
       {
-        "text": "角色",
-        "value": 3
-      },
-      {
-        "text": "经常",
-        "value": 3
-      },
-      {
         "text": "强度",
-        "value": 2
-      },
-      {
-        "text": "剧情",
         "value": 2
       },
       {
@@ -761,10 +526,6 @@
       },
       {
         "text": "主线剧情",
-        "value": 2
-      },
-      {
-        "text": "出现",
         "value": 2
       },
       {
@@ -789,14 +550,6 @@
       },
       {
         "text": "人工梦游",
-        "value": 2
-      },
-      {
-        "text": "玩法",
-        "value": 2
-      },
-      {
-        "text": "关注",
         "value": 2
       },
       {
@@ -840,19 +593,43 @@
         "value": 1
       },
       {
-        "text": "放在",
-        "value": 1
-      },
-      {
         "text": "抽卡",
         "value": 1
       },
       {
-        "text": "建议",
+        "text": "数值",
         "value": 1
       },
       {
-        "text": "版本",
+        "text": "人设",
+        "value": 1
+      },
+      {
+        "text": "立绘",
+        "value": 1
+      },
+      {
+        "text": "语音",
+        "value": 1
+      },
+      {
+        "text": "维尔汀",
+        "value": 1
+      },
+      {
+        "text": "十四行诗",
+        "value": 1
+      },
+      {
+        "text": "暴雨",
+        "value": 1
+      },
+      {
+        "text": "司辰",
+        "value": 1
+      },
+      {
+        "text": "剧情体验",
         "value": 1
       }
     ]
@@ -863,7 +640,7 @@
       "platform": "sample",
       "title": "characters",
       "characters": 121,
-      "collected_at": "2026-04-28T10:26:42+00:00",
+      "collected_at": "2026-04-28T17:02:13+00:00",
       "url": ""
     },
     {
@@ -871,7 +648,7 @@
       "platform": "sample",
       "title": "overview",
       "characters": 198,
-      "collected_at": "2026-04-28T10:26:42+00:00",
+      "collected_at": "2026-04-28T17:02:13+00:00",
       "url": ""
     },
     {
@@ -879,7 +656,7 @@
       "platform": "sample",
       "title": "systems",
       "characters": 114,
-      "collected_at": "2026-04-28T10:26:42+00:00",
+      "collected_at": "2026-04-28T17:02:13+00:00",
       "url": ""
     }
   ]
