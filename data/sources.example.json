@@ -5,14 +5,69 @@
     "url": "https://re.bluepoch.com/",
     "platform": "official",
     "tags": ["official", "homepage"],
-    "enabled": true
+    "enabled": true,
+    "crawl_depth": 1,
+    "max_pages": 8,
+    "allow_domains": ["re.bluepoch.com"],
+    "include_patterns": ["news", "notice", "article", "event", "re\\.bluepoch\\.com"]
   },
   {
-    "name": "example-search-page",
+    "name": "pcgamingwiki-reverse-1999",
     "type": "page",
-    "url": "https://example.com/search?q=%E9%87%8D%E8%BF%94%E6%9C%AA%E6%9D%A51999",
-    "platform": "example",
-    "tags": ["placeholder"],
-    "enabled": false
+    "url": "https://www.pcgamingwiki.com/wiki/Reverse:_1999",
+    "platform": "wiki",
+    "tags": ["wiki", "global"],
+    "enabled": true,
+    "crawl_depth": 0,
+    "max_pages": 1,
+    "allow_domains": ["www.pcgamingwiki.com"]
+  },
+  {
+    "name": "reddit-search-reverse-1999",
+    "type": "page",
+    "url": "https://www.reddit.com/search/?q=Reverse%3A%201999&type=link",
+    "platform": "reddit",
+    "tags": ["community", "global", "search"],
+    "enabled": false,
+    "crawl_depth": 1,
+    "max_pages": 10,
+    "allow_domains": ["www.reddit.com", "reddit.com"],
+    "include_patterns": ["Reverse", "1999", "r/Reverse1999"]
+  },
+  {
+    "name": "taptap-search-reverse-1999",
+    "type": "page",
+    "url": "https://www.taptap.cn/search/重返未来1999",
+    "platform": "taptap",
+    "tags": ["community", "cn", "search"],
+    "enabled": false,
+    "crawl_depth": 1,
+    "max_pages": 10,
+    "allow_domains": ["www.taptap.cn"],
+    "include_patterns": ["重返未来", "1999", "topic", "app"]
+  },
+  {
+    "name": "bilibili-search-reverse-1999",
+    "type": "page",
+    "url": "https://search.bilibili.com/all?keyword=重返未来1999",
+    "platform": "bilibili",
+    "tags": ["video", "cn", "search"],
+    "enabled": false,
+    "crawl_depth": 1,
+    "max_pages": 10,
+    "allow_domains": ["search.bilibili.com", "www.bilibili.com"],
+    "include_patterns": ["重返未来", "1999", "video", "read"]
+  },
+  {
+    "name": "zhihu-search-reverse-1999",
+    "type": "page",
+    "url": "https://www.zhihu.com/search?type=content&q=重返未来1999",
+    "platform": "zhihu",
+    "tags": ["community", "cn", "search"],
+    "enabled": false,
+    "crawl_depth": 1,
+    "max_pages": 10,
+    "allow_domains": ["www.zhihu.com", "zhuanlan.zhihu.com"],
+    "include_patterns": ["重返未来", "1999", "question", "p/"]
   }
 ]
