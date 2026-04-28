@@ -21,6 +21,7 @@ CORPUS_DIR = ROOT / "data" / "corpus"
 SAMPLE_DIR = ROOT / "data" / "sample_corpus"
 STOPWORDS_PATH = ROOT / "data" / "stopwords_zh.txt"
 LEXICON_PATH = ROOT / "data" / "lexicon_zh.txt"
+VERSIONS_PATH = ROOT / "data" / "versions.json"
 DOCS_DIR = ROOT / "docs"
 
 CHINESE_OR_ALNUM = re.compile(r"[\u4e00-\u9fffA-Za-z0-9:+._-]+")
@@ -41,6 +42,81 @@ def now_utc() -> str:
 def parse_datetime(value: str | None) -> datetime | None:
     if not value:
         return None
+
+
+def load_versions(path: Path, horizon: datetime | None = None) -> list[dict]:
+    if not path.exists():
+        return []
+
+    versions = json.loads(path.read_text(encoding="utf-8"))
+    normalized = []
+    for version in versions:
+        start = parse_datetime(version.get("start"))
+        end = parse_datetime(version.get("end"))
+        if not start or not end:
+            continue
+        normalized.append(
+            {
+                **version,
+                "start_dt": start,
+                "end_dt": end,
+                "start": start.isoformat(timespec="seconds"),
+                "end": end.isoformat(timespec="seconds"),
+            }
+        )
+
+    normalized.sort(key=lambda item: item["start_dt"])
+    if horizon and normalized:
+        normalized.extend(auto_extend_versions(normalized[-1], horizon))
+    return normalized
+
+
+def next_version_id(version_id: str) -> str:
+    try:
+        major, minor = version_id.split(".", 1)
+        return f"{int(major)}.{int(minor) + 1}"
+    except (ValueError, AttributeError):
+        return "auto-next"
+
+
+def auto_extend_versions(last_version: dict, horizon: datetime) -> list[dict]:
+    generated = []
+    current = last_version
+    while current["end_dt"] < horizon:
+        start = current["end_dt"]
+        end = start + timedelta(days=42)
+        version_id = next_version_id(current["id"])
+        current = {
+            "id": version_id,
+            "name": f"自动推断 {version_id}",
+            "start_dt": start,
+            "end_dt": end,
+            "start": start.isoformat(timespec="seconds"),
+            "end": end.isoformat(timespec="seconds"),
+            "source": "auto-inferred-standard-42-day-window",
+        }
+        generated.append(current)
+    return generated
+
+
+def public_version(version: dict) -> dict:
+    return {
+        "id": version["id"],
+        "name": version.get("name", version["id"]),
+        "start": version["start"],
+        "end": version["end"],
+        "source": version.get("source", ""),
+    }
+
+
+def version_for_record(record: dict, versions: list[dict]) -> dict | None:
+    record_date = parse_datetime(record.get("published_at")) or parse_datetime(record.get("collected_at"))
+    if not record_date:
+        return None
+    for version in versions:
+        if version["start_dt"] <= record_date < version["end_dt"]:
+            return version
+    return None
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
         if parsed.tzinfo is None:
@@ -103,6 +179,11 @@ def iter_corpus_records(corpus_dir: Path, max_age_days: int) -> list[dict]:
 
 def sample_records(sample_dir: Path) -> list[dict]:
     records: list[dict] = []
+    sample_dates = {
+        "characters": "2026-03-18T12:00:00+08:00",
+        "overview": "2026-04-15T12:00:00+08:00",
+        "systems": "2026-05-08T12:00:00+08:00",
+    }
     for path in sorted(sample_dir.glob("*.txt")):
         text = path.read_text(encoding="utf-8", errors="ignore")
         records.append(
@@ -116,6 +197,7 @@ def sample_records(sample_dir: Path) -> list[dict]:
                 "tags": ["sample"],
                 "text": text,
                 "characters": len(text),
+                "published_at": sample_dates.get(path.stem, now_utc()),
                 "collected_at": now_utc(),
             }
         )
@@ -195,10 +277,19 @@ def source_items(counters: dict[str, Counter[str]], limit: int) -> dict[str, lis
     return {source: word_items(counter, limit) for source, counter in sorted(counters.items())}
 
 
-def build_payload(records: list[dict], stopwords: set[str], lexicon: list[str], limit: int, max_age_days: int) -> dict:
+def build_payload(
+    records: list[dict],
+    stopwords: set[str],
+    lexicon: list[str],
+    limit: int,
+    max_age_days: int,
+    versions: list[dict],
+) -> dict:
     global_counter: Counter[str] = Counter()
     source_counters: dict[str, Counter[str]] = defaultdict(Counter)
     platform_counters: dict[str, Counter[str]] = defaultdict(Counter)
+    version_counters: dict[str, Counter[str]] = defaultdict(Counter)
+    version_doc_counts: Counter[str] = Counter()
     document_lengths: list[int] = []
     relevant_records = []
 
@@ -214,8 +305,27 @@ def build_payload(records: list[dict], stopwords: set[str], lexicon: list[str], 
         global_counter.update(tokens)
         source_counters[record.get("source", "unknown")].update(tokens)
         platform_counters[record.get("platform", "unknown")].update(tokens)
+        version = version_for_record(record, versions)
+        if version:
+            record["version_id"] = version["id"]
+            record["version_name"] = version.get("name", version["id"])
+            version_counters[version["id"]].update(tokens)
+            version_doc_counts[version["id"]] += 1
 
     total_tokens = sum(global_counter.values())
+    version_payloads = []
+    for version in versions:
+        counter = version_counters.get(version["id"], Counter())
+        version_payloads.append(
+            {
+                **public_version(version),
+                "documents": version_doc_counts.get(version["id"], 0),
+                "tokens": sum(counter.values()),
+                "unique_terms": len(counter),
+                "top_words": word_items(counter, limit),
+            }
+        )
+
     return {
         "generated_at": now_utc(),
         "summary": {
@@ -231,10 +341,14 @@ def build_payload(records: list[dict], stopwords: set[str], lexicon: list[str], 
         "top_words": word_items(global_counter, limit),
         "by_source": source_items(source_counters, 30),
         "by_platform": source_items(platform_counters, 30),
+        "by_version": {version["id"]: version for version in version_payloads},
+        "versions": version_payloads,
         "documents": [
             {
                 "source": record.get("source", "unknown"),
                 "platform": record.get("platform", "unknown"),
+                "version_id": record.get("version_id", ""),
+                "version_name": record.get("version_name", ""),
                 "title": record.get("title", ""),
                 "characters": record.get("characters", 0),
                 "published_at": record.get("published_at", ""),
@@ -302,20 +416,24 @@ def main() -> None:
     parser.add_argument("--allow-sample", action="store_true", default=True)
     parser.add_argument("--sample-only", action="store_true")
     parser.add_argument("--max-age-days", type=int, default=365)
+    parser.add_argument("--versions", type=Path, default=VERSIONS_PATH)
     args = parser.parse_args()
 
     stopwords = read_stopwords(STOPWORDS_PATH)
     lexicon = load_lexicon(LEXICON_PATH)
+    horizon = datetime.now(timezone.utc) + timedelta(days=120)
+    versions = load_versions(args.versions, horizon=horizon)
     records = [] if args.sample_only else iter_corpus_records(args.corpus_dir, args.max_age_days)
     if not records and args.allow_sample:
         records = sample_records(SAMPLE_DIR)
 
-    payload = build_payload(records, stopwords, lexicon, args.limit, args.max_age_days)
+    payload = build_payload(records, stopwords, lexicon, args.limit, args.max_age_days, versions)
     write_json(payload, DOCS_DIR / "data.json")
     write_json(payload["top_words"], DOCS_DIR / "wordcloud.json")
+    write_json(payload["versions"], DOCS_DIR / "versions.json")
     write_svg(payload["top_words"], DOCS_DIR / "wordcloud.svg")
     print(
-        "Wrote docs/data.json, docs/wordcloud.json and docs/wordcloud.svg "
+        "Wrote docs/data.json, docs/wordcloud.json, docs/versions.json and docs/wordcloud.svg "
         f"from {payload['summary']['documents']} document(s)."
     )
 
