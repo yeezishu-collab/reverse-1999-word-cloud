@@ -9,6 +9,7 @@
 - 配置式采集公开网页或 RSS/Atom
 - 一键更新入口：采集最新公开内容并重建词云
 - 默认分析时间窗口为近 365 天
+- 按《重返未来：1999》版本周期自动分组词云，当前从 1.9 版本开始
 - 支持从种子页按限定域名、关键词和深度扩展采集
 - 输出结构化 JSONL 语料到 `data/corpus/`
 - 内置《重返未来：1999》角色、系统、玩法词典
@@ -27,10 +28,12 @@
 │   ├── lexicon_zh.txt          # 游戏专用词典
 │   ├── sample_corpus/          # 无真实采集数据时的演示语料
 │   ├── sources.example.json    # 数据源配置示例
+│   ├── versions.json           # 1.9 起的版本窗口规则
 │   └── stopwords_zh.txt        # 停用词
 ├── docs/
 │   ├── index.html              # GitHub Pages 仪表盘
 │   ├── data.json               # 仪表盘主数据
+│   ├── versions.json           # 每个版本的独立词云输出
 │   ├── wordcloud.json          # 兼容词频数组
 │   └── wordcloud.svg           # 静态词云
 └── src/
@@ -107,7 +110,31 @@ python src\update.py --sample-only --limit 220
 1. 读取 `data/sources.json`，如果没有就读取 `data/sources.example.json`
 2. 采集最新公开内容到 `data/corpus/run-*.jsonl`
 3. 只统计近 365 天内的记录
-4. 刷新 `docs/data.json`、`docs/wordcloud.json` 和 `docs/wordcloud.svg`
+4. 按 `data/versions.json` 的版本窗口分组
+5. 刷新 `docs/data.json`、`docs/versions.json`、`docs/wordcloud.json` 和 `docs/wordcloud.svg`
+
+## 版本词云规则
+
+版本窗口由 `data/versions.json` 定义，格式如下：
+
+```json
+{
+  "id": "3.6",
+  "name": "版本3.6",
+  "start": "2026-04-09T05:00:00+08:00",
+  "end": "2026-04-30T05:00:00+08:00"
+}
+```
+
+分组规则：
+
+- 采集记录优先使用 `published_at`，没有发布时间时使用 `collected_at`
+- 当 `start <= record_time < end` 时，该记录归入对应版本
+- `docs/data.json` 会输出 `by_version`
+- `docs/versions.json` 会输出每个版本独立词云
+- 如果当前时间超过最后一个已知版本窗口，脚本会按 42 天标准周期自动推断后续版本占位，未来新增数据仍会进入新的版本桶
+
+目前规则从 1.9 版本开始；你给的 3.6 版本窗口已按 `2026-04-09 05:00` 到 `2026-04-30 05:00` 写入。
 
 ## 数据源策略
 
